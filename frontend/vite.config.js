@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Em desenvolvimento, as chamadas /api são encaminhadas para o backend (porta 3001).
+// Inicie Bd - Troc.AI/api.py para encaminhar as chamadas /api ao backend Python.
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173, proxy: { "/api": "http://localhost:3001" } },
+  server: { port: 5173, proxy: { "/api": "http://127.0.0.1:3001" } },
 });

@@ -1,49 +1,100 @@
 import { useEffect, useState } from "react";
-import { buscar } from "../api.js";
+import { Link } from "react-router-dom";
+import { buscar, conectarPerfil } from "../api.js";
 
-// RF-02: dashboard de busca
-export default function Busca() {
+export default function Busca({ usuario }) {
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState("");
-  const [itens, setItens] = useState(null);
+  const [perfis, setPerfis] = useState(null);
   const [erro, setErro] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [conectando, setConectando] = useState(null);
 
-  const pesquisar = (e) => {
+  const pesquisar = async (e) => {
     e?.preventDefault();
-    buscar(q, tipo).then(setItens).catch((err) => setErro(err.message));
+    setErro("");
+    try {
+      setPerfis(await buscar(q, tipo));
+    } catch (err) {
+      setErro(err.message);
+    }
   };
 
-  useEffect(pesquisar, []); // carrega tudo ao abrir a tela
+  useEffect(() => {
+    pesquisar();
+  }, [usuario?.id]);
+
+  const conectar = async (perfil) => {
+    setConectando(perfil.id);
+    setFeedback("");
+    setErro("");
+    try {
+      const resultado = await conectarPerfil(perfil.id);
+      setFeedback(resultado.match
+        ? `Deu match com ${perfil.nome}!`
+        : `Interesse enviado para ${perfil.nome}. Se a pessoa também se conectar, vocês terão um match.`);
+      setPerfis((atuais) => atuais?.filter((item) => item.id !== perfil.id) ?? []);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setConectando(null);
+    }
+  };
 
   return (
     <>
-      <h1>Dashboard de busca</h1>
+      <h1>Buscar pessoas</h1>
+      <p className="sub">Encontre quem ensina o que você quer aprender.</p>
       <form className="busca" onSubmit={pesquisar}>
         <input
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Pesquisar por área ou conhecimento (ex.: Python, Design)"
+          placeholder="Buscar por habilidade, nome ou cidade"
         />
         <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
           <option value="">Ofertas e demandas</option>
-          <option value="Oferta">Ofertas</option>
-          <option value="Demanda">Demandas</option>
+          <option value="oferta">O que as pessoas ensinam</option>
+          <option value="demanda">O que as pessoas querem aprender</option>
         </select>
         <button type="submit">Buscar</button>
       </form>
 
-      {erro && <div className="alerta erro">{erro}</div>}
-      {itens && itens.length === 0 && <div className="vazio">Nenhuma correspondência foi encontrada.</div>}
+      {erro && <div className="alerta erro" role="alert">{erro}</div>}
+      {feedback && <div className="alerta ok" role="status">{feedback}</div>}
+      {perfis && perfis.length === 0 && (
+        <div className="vazio">Nenhum perfil ativo corresponde à busca.</div>
+      )}
       <div className="grade">
-        {itens?.map((i) => (
-          <article className="cartao" key={i.id}>
-            <span className={`selo ${i.tipo.toLowerCase()}`}>{i.tipo}</span>
-            <h3>{i.area}</h3>
-            <p>{i.descricao}</p>
-            <small>{i.nome} · {i.nivel} · {i.disponibilidade}</small>
-          </article>
-        ))}
+        {perfis?.map((perfil) => {
+          const ensina = perfil.skills_out;
+          const querAprender = perfil.skills_in;
+          return (
+            <article className="cartao perfil" key={perfil.id}>
+              <span className="selo oferta">{perfil.cidade || "Comunidade online"}</span>
+              <h2>{perfil.nome}</h2>
+              {(perfil.curso || perfil.instituicao) && (
+                <p className="detalhe">{[perfil.curso, perfil.instituicao].filter(Boolean).join(" · ")}</p>
+              )}
+              {perfil.bio && <p>{perfil.bio}</p>}
+              <h3>Ensina</h3>
+              <p>{ensina.join(", ")}</p>
+              <h3>Quer aprender</h3>
+              <p>{querAprender.join(", ")}</p>
+              {usuario ? (
+                <button
+                  type="button"
+                  disabled={conectando === perfil.id}
+                  onClick={() => conectar(perfil)}
+                >
+                  {conectando === perfil.id ? "Enviando..." : "♡ Conectar"}
+                </button>
+              ) : (
+                <Link to="/login">Entre para se conectar</Link>
+              )}
+            </article>
+          );
+        })}
       </div>
     </>
   );
