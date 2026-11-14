@@ -12,16 +12,20 @@ SESSOES = {}
 COOKIE_SESSAO = "trocai_sessao"
 
 
-def preparar_banco():
-    conn = banco.conectar()
+def preparar_banco(caminho=banco.DB_PADRAO):
+    conn = banco.conectar(caminho)
     try:
         tabelas = {r["name"] for r in conn.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table'")}
         if "usuarios" not in tabelas:
             banco.criar_banco(conn)
-        total = conn.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
-        if total == 0:
-            banco.popular_demo(conn)
+        for perfil in banco.PERFIS_DEMO:
+            existente = conn.execute(
+                "SELECT 1 FROM usuarios WHERE id = ? OR email = ?",
+                (perfil["id"], perfil["email"]),
+            ).fetchone()
+            if existente is None:
+                banco.criar_usuario(conn, **perfil)
     finally:
         conn.close()
 
