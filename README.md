@@ -31,3 +31,9 @@ npm run dev
 ```
 
 A API fica em `http://127.0.0.1:3001`; o front-end Vite fica em `http://localhost:5173`. Consulte `docs/API.md` antes de integrar componentes React aos endpoints.
+
+## 🎬 Demonstração do Sistema (Prova de Conceito)
+👉 [Assistir ao Vídeo de Demonstração](https://youtu.be/AQviN4rIISk).
+
+## 📋 Qualidade e Testes (QA)
+👉 [Acessar Relatório de QA Completo](Relatorio_QA_Trocai.pdf).
