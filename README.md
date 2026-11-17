@@ -36,4 +36,4 @@ A API fica em `http://127.0.0.1:3001`; o front-end Vite fica em `http://localhos
 👉 [Assistir ao Vídeo de Demonstração](https://youtu.be/AQviN4rIISk).
 
 ## 📋 Qualidade e Testes (QA)
-👉 [Acessar Relatório de QA Completo](Relatorio_QA_Trocai.pdf).
+👉 [Acessar Relatório de QA Completo](./Relatorio_QA_Trocai.pdf).
